@@ -24,7 +24,7 @@ namespace MicroSqlBulk.Helper
                 if (AttributeHelper.TryGetCustomAttribute(prop, out ColumnAttribute columnAttribute))
                 {
                     if(columnAttribute.IsPrimaryKey && containsPrimaryKey)
-                        throw new InvalidOperationException($"This '{prop.Name}' can't set as primary key, because the primary key already field exists in the table configuration manager.");
+                        throw new InvalidOperationException($"The '{prop.Name}' property can't be used as a primary key. The primary key is already used for another property.");
                     containsPrimaryKey = columnAttribute.IsPrimaryKey;
                     columns.Add(new Column((columnAttribute).Name, prop, containsPrimaryKey));
                 }

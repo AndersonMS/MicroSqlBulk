@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -10,10 +11,10 @@ namespace MicroSqlBulk.Helper
         {
             var sqlBulkEntityConfiguration = CacheHelper.GetConfiguration<TEntity>();
 
-            DataTable dataTable = new DataTable(sqlBulkEntityConfiguration.TableName);
+            DataTable dataTable = new DataTable(sqlBulkEntityConfiguration.FullTableName);
 
             var dataColumns = sqlBulkEntityConfiguration.Columns
-                                .Select(col => new DataColumn(col.Name, col.PropertyDescriptor.PropertyType))
+                                .Select(col => new DataColumn(col.Name, Nullable.GetUnderlyingType(col.PropertyDescriptor.PropertyType) ?? col.PropertyDescriptor.PropertyType))
                                 .ToArray();
 
             dataTable.Columns.AddRange(dataColumns);

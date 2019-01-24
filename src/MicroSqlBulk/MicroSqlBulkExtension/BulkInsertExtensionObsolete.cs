@@ -9,6 +9,7 @@ namespace MicroSqlBulk
     [Obsolete("This class is deprecated, use MicroSqlBulkExtension instead.")]
     public static class BulkInsertExtension
     {
+        [Obsolete("This method is deprecated, use MicroSqlBulkExtension.BulkInsert instead.")]
         public static void BulkInsert<TEntity>(this IDbConnection dbConnection, List<TEntity> data, int timeout = 30, bool openConnection = true, bool closeConnection = true)
         {
             try

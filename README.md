@@ -5,7 +5,7 @@ MicroSqlBulk  or **µ**SqlBulk is an IDbConnection extension for bulk operations
 ### Download
 >**µ**SqlBulk is available [here](https://www.nuget.org/packages/MicroSqlBulk/) as a Nuget Package. You can install it using the Nuget Package Manager Console:
 
-```PM> Install-Package MicroSqlBulk -Version 1.0.2```
+```PM> Install-Package MicroSqlBulk -Version 1.1.3```
 
 ### usage
 *1. Attributes*
@@ -38,6 +38,13 @@ Here's how simple it is to extend IDbConnection, look at the example below:
     using (SqlConnection connection = new SqlConnection(connectionString))
     {
         connection.BulkInsert(data);                
+    }
+   
+To insert or bulk update, you can use this way:
+    
+    using (SqlConnection connection = new SqlConnection(connectionString))
+    {
+        connection.BulkInsertOrUpdate(dataListToUpdate);
     }
 
 *Default settings:*

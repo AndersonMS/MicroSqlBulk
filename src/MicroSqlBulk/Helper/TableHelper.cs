@@ -9,36 +9,46 @@ namespace MicroSqlBulk.Helper
 {
     public static class TableHelper
     {
-       
-
-        public static string GetTableName<TEntity>()
+        public static void GetTableNameAndSchema<TEntity>(out string tableName, out string schema)
         {
             TableAttribute customAttribute = (TableAttribute)(typeof(TEntity).GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault());
 
             if (customAttribute == null)
-                throw new InvalidOperationException($"The entity '{typeof(TEntity)}' should be configured through the '{nameof(TableAttribute)}'");
+                throw new InvalidOperationException($"The '{typeof(TEntity)}' entity should be configured through the '{nameof(TableAttribute)}'");
 
-            var schema = !string.IsNullOrWhiteSpace(customAttribute.Schema) ? $"{customAttribute.Schema}." : string.Empty;
-            var tableName = customAttribute.Name;
-
-            return $"{schema}{tableName}";
+             schema = !string.IsNullOrWhiteSpace(customAttribute.Schema) ? $"{customAttribute.Schema}" : string.Empty;
+             tableName = customAttribute.Name;
         }
 
         private static Dictionary<Type, String> _sqlDataMapper
         {
             get
-            {               
+            {
                 Dictionary<Type, String> dataMapper = new Dictionary<Type, string>();
-                dataMapper.Add(typeof(int), "BIGINT");
+                dataMapper.Add(typeof(int), "BIGINT NOT NULL");
+                dataMapper.Add(typeof(int?), "BIGINT");
+                dataMapper.Add(typeof(long), "BIGINT NOT NULL");
+                dataMapper.Add(typeof(long?), "BIGINT");
                 dataMapper.Add(typeof(string), "NVARCHAR(MAX)");
-                dataMapper.Add(typeof(bool), "BIT");
-                dataMapper.Add(typeof(DateTime), "DATETIME");
-                dataMapper.Add(typeof(float), "FLOAT");
-                dataMapper.Add(typeof(decimal), "DECIMAL(18,0)");
-                dataMapper.Add(typeof(Guid), "UNIQUEIDENTIFIER");
+                dataMapper.Add(typeof(bool), "BIT NOT NULL");
+                dataMapper.Add(typeof(bool?), "BIT");
+                dataMapper.Add(typeof(DateTime), "DATETIME NOT NULL");
+                dataMapper.Add(typeof(DateTime?), "DATETIME");
+                dataMapper.Add(typeof(float), "FLOAT NOT NULL");
+                dataMapper.Add(typeof(float?), "FLOAT");
+                dataMapper.Add(typeof(decimal), "DECIMAL(18,0) NOT NULL");
+                dataMapper.Add(typeof(decimal?), "DECIMAL(18,0)");
+                dataMapper.Add(typeof(Guid), "UNIQUEIDENTIFIER NOT NULL");
+                dataMapper.Add(typeof(Guid?), "UNIQUEIDENTIFIER");
 
                 return dataMapper;
             }
+        }
+
+        public static bool IsNullableEnum(this Type type)
+        {
+            Type u = Nullable.GetUnderlyingType(type);
+            return (u != null) && u.IsEnum;
         }
 
         public static string GetSQLDataType(this Type type)
@@ -47,6 +57,13 @@ namespace MicroSqlBulk.Helper
             {
                 return dataType;
             }
+
+            if (IsNullableEnum(type))
+                return "INT";
+
+            if (type.IsEnum)
+                return "INT NOT NULL";
+
 
             throw new KeyNotFoundException($"The element {type.Name} doesn't  match any key in the collection.");
         }
@@ -57,7 +74,7 @@ namespace MicroSqlBulk.Helper
 
             StringBuilder script = new StringBuilder();
 
-            script.AppendLine($"CREATE TABLE #{config.TableName}_TEMP");
+            script.AppendLine($"CREATE TABLE {config.FullTempTableName}");
             script.AppendLine("(");
 
             for (int i = 0; i < config.Columns.Count; i++)
@@ -92,7 +109,7 @@ namespace MicroSqlBulk.Helper
                 if (column.IsPrimaryKey)
                     continue;
 
-                script.Append($"{config.TableName}.{column.Name} = #{config.TableName}_TEMP.{column.Name}");
+                script.Append($"{config.FullTableName}.{column.Name} = {config.FullTempTableName}.{column.Name}");
 
                 if (i != config.Columns.Count - 1)
                 {
@@ -112,7 +129,7 @@ namespace MicroSqlBulk.Helper
             if (columnPrimaryKey == null)
                 throw new MissingFieldException($"Unable to proceed with the operation, because the primary key of the {config.TableName} table was not found.");
 
-            return $"ON {config.TableName}.{columnPrimaryKey.Name} = #{config.TableName}_TEMP.{columnPrimaryKey.Name}";
+            return $"ON {config.FullTableName}.{columnPrimaryKey.Name} = {config.FullTempTableName}.{columnPrimaryKey.Name}";
         }
 
         public static string GenerateValuesUpdate<TEntity>()
@@ -128,7 +145,7 @@ namespace MicroSqlBulk.Helper
                 if (column.IsPrimaryKey)
                     continue;
 
-                script.Append($"#{config.TableName}_TEMP.{column.Name}");
+                script.Append($"{config.FullTempTableName}.{column.Name}");
 
                 if (i != config.Columns.Count - 1)
                 {

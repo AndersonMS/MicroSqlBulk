@@ -14,8 +14,9 @@ namespace MicroSqlBulk.Helper
             if (!_mapperCache.TryGetValue(nameOfT, out sqlBulkEntityConfiguration))
             {
                 var columns = ColumnHelper.GetFildesInfo<TEntity>();
-                var tableName = TableHelper.GetTableName<TEntity>();
-                sqlBulkEntityConfiguration = new SqlBulkConfiguration(columns, tableName);
+                TableHelper.GetTableNameAndSchema<TEntity>(out string tableName, out string schema);
+             
+                sqlBulkEntityConfiguration = new SqlBulkConfiguration(columns, tableName, schema);
                 _mapperCache.TryAdd(nameOfT, sqlBulkEntityConfiguration);
             }
 

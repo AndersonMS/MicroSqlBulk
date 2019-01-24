@@ -8,11 +8,13 @@ namespace MicroSqlBulk
 {
     public static partial class MicroSqlBulkExtension
     {
-        public static void BulkUpdate<TEntity>(this IDbConnection dbConnection, IEnumerable<TEntity> data, int timeout = 30, bool openConnection = true, bool closeConnection = true)
+        public static void BulkInsertOrUpdate<TEntity>(this IDbConnection dbConnection, IEnumerable<TEntity> data, int timeout = 30, bool openConnection = true, bool closeConnection = true)
         {
             DataTable dataTable = DataTableHelper.ConvertToDatatable(data.ToList());
 
-            string tempTableName = $"#{dataTable.TableName}_TEMP";
+            var sqlBulkEntityConfiguration = CacheHelper.GetConfiguration<TEntity>();
+
+            var tempTableName = sqlBulkEntityConfiguration.FullTempTableName;
 
             SqlConnection conn = (SqlConnection)dbConnection;
 

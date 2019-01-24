@@ -48,7 +48,7 @@ namespace MicroSqlBulk.Test.Attribute
         [Test]
         public void ShouldThrowExceptionWhenTheClassHasNoTableAttribute()
         {
-            Action act = () => { TableHelper.GetTableName<TableDummy2>(); };
+            Action act = () => { TableHelper.GetTableNameAndSchema<TableDummy2>(out string tableName, out string schema); };
 
             act.Should()
              .Throw<InvalidOperationException>();
@@ -57,10 +57,13 @@ namespace MicroSqlBulk.Test.Attribute
         [Test]
         public void ShouldReturnTheTableName()
         {
-            TableHelper
-                .GetTableName<TableDummy3>()
-                .Should()
+            TableHelper.GetTableNameAndSchema<TableDummy3>(out string tableName, out string schema);
+
+            tableName.Should()
                 .Be("TABLE_DUMMY_3");
+
+            schema.Should()
+             .Be(string.Empty);
         }
 
         [Test]

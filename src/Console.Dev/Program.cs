@@ -11,35 +11,49 @@ namespace Console.Dev
     {
         static void Main(string[] args)
         {
-            string connectionString = "data source=localhost;initial catalog=HBMDM_1ST_SERVICES;persist security info=True;user id=sa;password=Mar@9627;MultipleActiveResultSets=True;App=EntityFramework";
-            var list = new List<TesteEntidade>();
+            string connectionString = @"data source=localhost\SQLEXPRESS;initial catalog=HBMDM;persist security info=True;user id=sa;password=Sa12345;MultipleActiveResultSets=True;App=EntityFramework";
+            var list = new List<Persons>();
 
-            for (int i = 3000; i < 503000; i++)
+            for (int i = 1; i <= 1000000; i++)
             {
-                list.Add(new TesteEntidade
+                list.Add(new Persons
                 {
-                    CdCodigo = i + 1,
-                    Idade = 22,
-                    Nome = Guid.NewGuid().ToString()
+                    FirstName = $"FirstName {i}",
+                    LastName = $"LastName {i}",
+                    Address = $"Address {i}",
+                    City = $"City{i}",
+                    PersonID = i
+
                 });
             }
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                connection.BulkUpdate(list, 300);
+                MicroSqlBulkExtension.BulkInsertOrUpdate(connection, list, 300);
             }
         }
     }
 
-    [Table("TB_TESTE")]
-    public class TesteEntidade
+    [Table("Persons", "dbo")]
+    public class Persons
     {
-        [Column("CdCodigo", true)]
-        public int CdCodigo { get; set; }
-        [Column("Idade")]
-        public int Idade { get; set; }
-        [Column("Nome")]
-        public string Nome { get; set; }
+        [Column("PersonID", true)]
+        public int PersonID { get; set; }
+
+        [Column("LastName")]
+        public string LastName { get; set; }
+
+        [Column("FirstName")]
+        public string FirstName { get; set; }
+
+        [Column("Address")]
+        public string Address { get; set; }
+
+        [Column("City")]
+        public string City { get; set; }
+
+        [Column("BirthDate")]
+        public DateTime? BirthDate { get; set; }
     }
 }
 
